@@ -16,7 +16,7 @@ public class Constants {
 	public static final Card REFERENCE_CARD_4 = new Card(Color.BLUE, Shape.CIRCLE, Number.FOUR);
 	public static final int SUCCESS_COUNTER_CHANGE_POINT = 3;
 	public static final int MINIMUM_SCORE_EXPECTED = 5;
-	public static final String PDF_FILE_PATH = "C:\\Users\\Romullo Girardi\\Documents\\R\u00D4MULLO\\workspace_jse\\Wisconsin\\generated_file/";
+	public static final String PDF_FILE_PATH = "generated_file/";
 	public static final String PDF_FILE_NAME_PREFIX = "Teste de Wisconsin"; 
 	
 	public static final ArrayList<Card> generateCardsToBePlayed() {

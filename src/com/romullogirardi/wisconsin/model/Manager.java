@@ -23,7 +23,7 @@ public class Manager {
 	private Card lastCardInPosition4 = null;
 	private Card cardToBePlayed = null;
 	private ArrayList<Card> cardsToBePlayed = new ArrayList<Card>();
-	private boolean lastMovementSuccess = false;
+//	private boolean lastMovementSuccess = false;
 	private ArrayList<Movement> movements = new ArrayList<Movement>();
 	private boolean gameFinished = false;
 	private int successCounter = 0;
@@ -114,9 +114,9 @@ public class Manager {
 		return cardsToBePlayed;
 	}
 
-	public boolean isLastMovementSuccess() {
-		return lastMovementSuccess;
-	}
+//	public boolean isLastMovementSuccess() {
+//		return lastMovementSuccess;
+//	}
 
 	public ArrayList<Movement> getMovements() {
 		return movements;
@@ -140,8 +140,10 @@ public class Manager {
 		boolean perseverative = false;
 		
 		//Referência para o movimento anterior
-		if(movements.size() > 0)
-//			Movement previousMovement = movements.get(movements.size() - 1);
+		Movement previousMovement = null;
+		if(movements.size() > 0) {
+			previousMovement = movements.get(movements.size() - 1);
+		}
 		
 		//Controle de sucessos
 		if(cardToBePlayed.getColor().equals(referenceCard.getColor())) {
@@ -157,15 +159,13 @@ public class Manager {
 			(strategy.equals(Strategy.SHAPE) && shapeSuccess) ||
 			(strategy.equals(Strategy.NUMBER) && numberSuccess)) {
 			success = true;
-			if(this.lastMovementSuccess)
+			if(previousMovement != null && previousMovement.isSuccess())
 				this.successCounter++;
 			else
 				this.successCounter = 1;
-			this.lastMovementSuccess = true;
 		}
 		else {
 			this.successCounter = 0;
-			this.lastMovementSuccess = false;
 		}
 		if(!colorSuccess && !shapeSuccess && !numberSuccess) {
 			otherSuccess = true;
@@ -178,8 +178,9 @@ public class Manager {
 
 		//Controle de perseveratividade
 		//1º caso
+		Strategy wrongStrategy = null;
 		if(!success && !ambiguous) {
-			Strategy wrongStrategy = ((colorSuccess) ? Strategy.COLOR : 
+			wrongStrategy = ((colorSuccess) ? Strategy.COLOR : 
 										(shapeSuccess) ? Strategy.SHAPE : 
 										(numberSuccess) ? Strategy.NUMBER : Strategy.OTHER);
 			if(wrongPerseverativeStrategy != null && wrongPerseverativeStrategy.equals(wrongStrategy)) {
@@ -190,10 +191,14 @@ public class Manager {
 			}
 		}
 		//2º caso
+		if(previousMovement != null && previousMovement.getCurrentStrategy().equals(strategy)) {
+			if(wrongStrategy != null && wrongStrategy.equals(previousMovement.getCurrentStrategy())) {
+				perseverative = true;
+			}
+		}
 		
-		
-		Movement movement = new Movement(strategy, lastMovementSuccess, success, colorSuccess, shapeSuccess, 
-				numberSuccess, otherSuccess, ambiguous, perseverative);
+		Movement movement = new Movement(strategy, (previousMovement != null) ? previousMovement.isSuccess() : false, 
+				success, colorSuccess, shapeSuccess, numberSuccess, otherSuccess, ambiguous, perseverative);
 		movements.add(movement);
 		changeLastCardInPosition(position);
 		nextCardToBePlayed();
@@ -305,5 +310,38 @@ public class Manager {
 			}
 		}
 		return numberOfWrongMovements;
+	}
+	
+	public int getNumberOfPerseverativeMovements() {
+
+		int numberOfPerseverativeMovements = 0;
+		for(Movement movement : movements) {
+			if(movement.isPerseverative()) {
+				numberOfPerseverativeMovements++;
+			}
+		}
+		return numberOfPerseverativeMovements;
+	}
+
+	public int getNumberOfPerseverativeErrors() {
+
+		int numberOfPerseverativeErrors = 0;
+		for(Movement movement : movements) {
+			if(movement.isPerseverative() && !movement.isSuccess()) {
+				numberOfPerseverativeErrors++;
+			}
+		}
+		return numberOfPerseverativeErrors;
+	}
+
+	public int getNumberOfConceptualLevelAnswers() {
+
+		int numberOfPerseverativeErrors = 0;
+//		for(Movement movement : movements) {
+//			if(movement.isPerseverative() && !movement.isSuccess()) {
+//				numberOfPerseverativeErrors++;
+//			}
+//		}
+		return numberOfPerseverativeErrors;
 	}
 }

@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import com.romullogirardi.wisconsin.model.Card;
 import com.romullogirardi.wisconsin.model.Constants;
 import com.romullogirardi.wisconsin.model.Manager;
+import com.romullogirardi.wisconsin.model.Movement;
 import com.romullogirardi.wisconsin.utils.PDFGenerator;
 
 public class WisconsinFrame implements MouseListener {
@@ -130,8 +131,9 @@ public class WisconsinFrame implements MouseListener {
 		updateWisconsinPanel();;
 		
 		//Showing feedback about the movement
+		Movement previousMovement = Manager.getInstance().getMovements().get(Manager.getInstance().getMovements().size() - 1);
 		String feedback = new String();
-		if(Manager.getInstance().isLastMovementSuccess()) {
+		if(previousMovement.isSuccess()) {
 			feedback = "CERTO";
 		}
 		else {
