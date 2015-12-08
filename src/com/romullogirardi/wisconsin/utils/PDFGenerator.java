@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Font.FontFamily;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -126,13 +128,14 @@ public class PDFGenerator {
 			//Inserir os indicadores de estratégia
 			paragraphText += movement.getReportDescription();
 			//Inserir indicador de perseveratividade
-			paragraphText += (movement.isPerseverative()) ? "p" : "";
+			paragraphText += (movement.isPerseverative()) ? " p" : "";
 			//Pular linha
 			paragraphText += "\n";
 			//Guardar referências deste movimento
 			previousStrategy = movement.getCurrentStrategy();
 			//Adicionar linha ao relatório
-			document.add(new Paragraph(paragraphText));
+			Font font = new Font(FontFamily.HELVETICA, 12f, Font.UNDERLINE);
+			document.add(new Paragraph(paragraphText, font));
 		}
 		
         document.add(new Paragraph(" "));
@@ -175,7 +178,7 @@ public class PDFGenerator {
 
 		//Inserir 5ª linha (Percentual de Erros)
 		table.addCell(createCell("Percentual de Erros"));
-		table.addCell(createCell(String.valueOf(100 * Math.round(Manager.getInstance().getNumberOfWrongMovements()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfWrongMovements()/Manager.getInstance().getMovements().size()))));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
@@ -189,7 +192,7 @@ public class PDFGenerator {
 
 		//Inserir 7ª linha (Percentual de Respostas Perseverativas)
 		table.addCell(createCell("Percentual de Respostas Perseverativas"));
-		table.addCell(createCell(String.valueOf(100 * Math.round(Manager.getInstance().getNumberOfPerseverativeMovements()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeMovements()/Manager.getInstance().getMovements().size()))));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
@@ -203,7 +206,7 @@ public class PDFGenerator {
 
 		//Inserir 9ª linha (Percentual de Erros Perseverativos)
 		table.addCell(createCell("Percentual de Erros Perseverativos"));
-		table.addCell(createCell(String.valueOf(100 * Math.round(Manager.getInstance().getNumberOfPerseverativeErrors()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeErrors()/Manager.getInstance().getMovements().size()))));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
@@ -217,7 +220,7 @@ public class PDFGenerator {
 
 		//Inserir 11ª linha (Percentual de Erros Não-perseverativos)
 		table.addCell(createCell("Percentual de Erros Não-perseverativos"));
-		table.addCell(createCell(String.valueOf(100 * Math.round((Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors())/Manager.getInstance().getMovements().size()))));
+		table.addCell(createCell(String.valueOf(Math.round(100 * (Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors())/Manager.getInstance().getMovements().size()))));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
@@ -231,7 +234,7 @@ public class PDFGenerator {
 
 		//Inserir 13ª linha (Percentual de Respostas de Nível Conceitual)
 		table.addCell(createCell("Percentual de Respostas de Nível Conceitual"));
-		table.addCell(createCell(String.valueOf(100 * Math.round(Manager.getInstance().getNumberOfConceptualLevelAnswers()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfConceptualLevelAnswers()/Manager.getInstance().getMovements().size()))));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
 		table.addCell(createCell(""));
@@ -288,32 +291,31 @@ public class PDFGenerator {
 		
 		//Definir tabelas de cada coluna
 		PdfPTable table1 = new PdfPTable(1);
-		table.addCell(table1);
+		table1.addCell(createCell("[1][1]"));
+		table1.addCell(createCell("[2][1]"));
+		table1.addCell(createCell("[3][1]"));
+		PdfPCell pdfPCellTable1 = new PdfPCell(table1);
+		pdfPCellTable1.setPadding(0);
+		table.addCell(pdfPCellTable1);
+
 		PdfPTable table2 = new PdfPTable(1);
-		table.addCell(table2);
+		table2.addCell(createCell("[1][2]"));
+		table2.addCell(createCell("[2][2]"));
+		table2.addCell(createCell("[3][2]"));
+		PdfPCell pdfPCellTable2 = new PdfPCell(table2);
+		pdfPCellTable2.setPadding(0);
+		table.addCell(pdfPCellTable2);
+		
 		PdfPTable table3 = new PdfPTable(1);
-		table.addCell(table3);
-
-		//Inserir 1ª linha (Descrição das colunas)
-		table1.addCell(createCell(""));
-		table1.addCell(createCell("Escore bruto"));
-		table1.addCell(createCell("Percentil"));
-
-		//Inserir 2ª linha (Número de Categorias Completadas)
-		table2.addCell(createCell("Número de Categorias Completadas"));
-		table2.addCell(createCell(String.valueOf("")));
-		table2.addCell(createCell(String.valueOf("")));
-
-		//Inserir 3ª linha (Ensaios para Completar a Primeira Categoria)
-		table3.addCell(createCell("Ensaios para Completar a Primeira Categoria"));
-		table3.addCell(createCell(String.valueOf("")));
-		table3.addCell(createCell(String.valueOf("")));
+		table3.addCell(createCell("[1][3]"));
+		table3.addCell(createCell("[2][3]"));
+		table3.addCell(createCell("[3][3]"));
+		PdfPCell pdfPCellTable3 = new PdfPCell(table3);
+		pdfPCellTable3.setPadding(0);
+		table.addCell(pdfPCellTable3);
 
 		//Adicionar a tabela ao documento
 		document.add(table);
-		document.add(table1);
-		document.add(table2);
-		document.add(table3);
 	}
 	private PdfPCell createCell(String text) {
 	
