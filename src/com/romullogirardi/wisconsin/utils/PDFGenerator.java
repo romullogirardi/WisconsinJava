@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -12,6 +13,7 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.Font.FontFamily;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -42,7 +44,7 @@ public class PDFGenerator {
         try {
         	
         	//Abrir PDF
-            PdfWriter.getInstance(document, new FileOutputStream(pdfFilePath));
+        	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFilePath));
             document.open();
 
             //Adicionar título
@@ -52,7 +54,8 @@ public class PDFGenerator {
             addHeader(document);
 
             //Adicionar o resumo dos movimentos
-            addMovementsDescription(document);
+//            addMovementsDescription(document, pdfWriter);
+            addMovementsDescriptionTable(document, pdfWriter);
             
     		//Adicionar a tabela 1 da área de escore
             addScoresArea1(document);
@@ -93,24 +96,99 @@ public class PDFGenerator {
 	}
 	
 	////////////////////////////////////////////////////////////// RESUMO DOS MOVIMENTOS /////////////////////////////////////////////////////////////////
-	private void addMovementsDescription(Document document) throws DocumentException {
-        Strategy previousStrategy = null;
+//	private void addMovementsDescription(Document document, PdfWriter pdfWriter) throws DocumentException {
+//        Strategy previousStrategy = null;
+//        int repeatedSuccessCounter = 0;
+//		for(int index = 0; index < Manager.getInstance().getMovements().size(); index++) {
+//			
+//			Movement movement = Manager.getInstance().getMovements().get(index);
+//			String paragraphText = "";
+//			//Colocar linha divisória e o indicador de categoria, caso necessário
+//			if(!movement.getCurrentStrategy().equals(previousStrategy)) {
+//    			if(previousStrategy != null) {
+//    				paragraphText += (!movement.getCurrentStrategy().equals(previousStrategy)) ? "__________________\n" : "";
+//    				repeatedSuccessCounter = 0;
+//    			}
+//    			paragraphText += movement.getCurrentStrategy().getFirstLetter() + "    ";
+//			}
+//			//Senão, inserir espaço vazio
+//			else {
+//    			paragraphText += "      ";
+//			}
+//			//Inserir o índice de acerto sublinhado
+//			if(movement.isPreviousSuccess() && movement.isSuccess()) {
+//				repeatedSuccessCounter++;
+//			}
+//			else if(!movement.isPreviousSuccess() && movement.isSuccess()) {
+//				repeatedSuccessCounter = 1;
+//			}
+//			else {
+//				repeatedSuccessCounter = 0;
+//			}
+//			paragraphText += ((repeatedSuccessCounter != 0) ? String.valueOf(repeatedSuccessCounter) : "  ") + "    ";
+//			//Inserir o índice do movimento
+//			paragraphText += (index + 1) + ".    ";
+//			//Inserir os indicadores de estratégia
+//			paragraphText += movement.getReportDescription();
+//			//Inserir indicador de perseveratividade
+//			paragraphText += (movement.isPerseverative()) ? " p" : "";
+//			//Pular linha
+//			paragraphText += "\n";
+//			//Guardar referências deste movimento
+//			previousStrategy = movement.getCurrentStrategy();
+//			//Adicionar linha ao relatório
+//			document.add(new Paragraph(paragraphText));
+//		}
+//		
+//        document.add(new Paragraph(" "));
+//        document.add(new Paragraph(" "));
+//	}
+
+	private void addMovementsDescriptionTable(Document document, PdfWriter pdfWriter) throws DocumentException {
+    
+		//Definir número de colunas da tabela
+		PdfPTable table = new PdfPTable(4);
+		table.setWidthPercentage(100);
+		
+		//Inicializar variáveis de controle
+		Strategy previousStrategy = null;
         int repeatedSuccessCounter = 0;
+        Paragraph paragraph;
+        Paragraph paragraphColumn1 = new Paragraph();
+        Paragraph paragraphColumn2 = new Paragraph();
+        Paragraph paragraphColumn3 = new Paragraph();
+        Paragraph paragraphColumn4 = new Paragraph();
+        
+        //Varrer todos os movimentos e preencher tabela
 		for(int index = 0; index < Manager.getInstance().getMovements().size(); index++) {
-			
+
+			//Guardar referência para o movimento atual
 			Movement movement = Manager.getInstance().getMovements().get(index);
-			String paragraphText = "";
+
+			//Selecionar coluna do movimento
+			if(index <= 15)
+				paragraph = paragraphColumn1;
+			else if(index <= 31)
+				paragraph = paragraphColumn2;
+			else if(index <= 47)
+				paragraph = paragraphColumn3;
+			else 
+				paragraph = paragraphColumn4;
+			
+			//Setar a fonte do texto
+			paragraph.setFont(new Font(FontFamily.HELVETICA, 10));
+			
 			//Colocar linha divisória e o indicador de categoria, caso necessário
 			if(!movement.getCurrentStrategy().equals(previousStrategy)) {
     			if(previousStrategy != null) {
-    				paragraphText += (!movement.getCurrentStrategy().equals(previousStrategy)) ? "__________________\n" : "";
+    				paragraph.add(((!movement.getCurrentStrategy().equals(previousStrategy)) ? "______________________\n" : ""));
     				repeatedSuccessCounter = 0;
     			}
-    			paragraphText += movement.getCurrentStrategy().getFirstLetter() + "    ";
+    			paragraph.add(movement.getCurrentStrategy().getFirstLetter() + "    ");
 			}
 			//Senão, inserir espaço vazio
 			else {
-    			paragraphText += "      ";
+    			paragraph.add("      ");
 			}
 			//Inserir o índice de acerto sublinhado
 			if(movement.isPreviousSuccess() && movement.isSuccess()) {
@@ -122,24 +200,70 @@ public class PDFGenerator {
 			else {
 				repeatedSuccessCounter = 0;
 			}
-			paragraphText += ((repeatedSuccessCounter != 0) ? String.valueOf(repeatedSuccessCounter) : "  ") + "    ";
+			Chunk repeatedSuccessCounterChunk = new Chunk(String.valueOf(repeatedSuccessCounter));
+			repeatedSuccessCounterChunk.setUnderline(1.0f, -1.5f);
+			if(repeatedSuccessCounter != 0)
+				paragraph.add(repeatedSuccessCounterChunk);
+			else
+				paragraph.add("  ");
+			paragraph.add("    ");
 			//Inserir o índice do movimento
-			paragraphText += (index + 1) + ".    ";
+			paragraph.add((index + 1) + ".    ");
 			//Inserir os indicadores de estratégia
-			paragraphText += movement.getReportDescription();
+			if(!movement.isSuccess())
+				paragraph.add("(");
+			Chunk colorChunk = new Chunk(Strategy.COLOR.getFirstLetter());
+			if(movement.isColorSuccess())
+				colorChunk.setUnderline(2.0f, 3);
+//			paragraph.add("  ");
+			paragraph.add(colorChunk);
+			Chunk shapeChunk = new Chunk(Strategy.SHAPE.getFirstLetter());
+			if(movement.isShapeSuccess())
+				shapeChunk.setUnderline(2.0f, 3);
+			paragraph.add("  ");
+			paragraph.add(shapeChunk);
+			Chunk numberChunk = new Chunk(Strategy.NUMBER.getFirstLetter());
+			if(movement.isNumberSuccess())
+				numberChunk.setUnderline(2.0f, 3);
+			paragraph.add("  ");
+			paragraph.add(numberChunk);
+			Chunk otherChunk = new Chunk(Strategy.OTHER.getFirstLetter());
+			if(movement.isOtherSuccess())
+				otherChunk.setUnderline(2.0f, 3);
+			paragraph.add("  ");
+			paragraph.add(otherChunk);
+			if(!movement.isSuccess())
+				paragraph.add(")");
 			//Inserir indicador de perseveratividade
-			paragraphText += (movement.isPerseverative()) ? " p" : "";
-			//Pular linha
-			paragraphText += "\n";
+			paragraph.add((movement.isPerseverative()) ? "  p" : "");
 			//Guardar referências deste movimento
 			previousStrategy = movement.getCurrentStrategy();
-			//Adicionar linha ao relatório
-			Font font = new Font(FontFamily.HELVETICA, 12f, Font.UNDERLINE);
-			document.add(new Paragraph(paragraphText, font));
+			//Adicionar parágrafo à tabela ou pular linha
+			if(index == 15 || index == 31 || index == 47 || index == 63) 
+				table.addCell(createCell(paragraph));
+			else
+				paragraph.add("\n");
 		}
 		
+		document.add(table);
+		
         document.add(new Paragraph(" "));
+//        Paragraph paragraphTest = new Paragraph();
+//        paragraphTest.add("Parágrafo");
+//        paragraphTest.add(" ");
+//        paragraphTest.add("Teste ");
+//        Chunk chunk1 = new Chunk("Sublinhado");
+//        chunk1.setUnderline(1.5f, -1);
+//        paragraphTest.add(chunk1);
+//        Chunk chunk2 = new Chunk("Riscado");
+//        chunk2.setUnderline(1.5f, 4);
+//        paragraphTest.add(chunk2);
+//        document.add(paragraphTest);
         document.add(new Paragraph(" "));
+	}
+	
+	private void fillColumnText(PdfPTable table, Paragraph columnText, int initialMovementIndex, int finalMovementIndex) {
+		
 	}
 	
 	////////////////////////////////////////////////////////////// ÁREA DE ESCORES 1 /////////////////////////////////////////////////////////////////////
@@ -317,8 +441,16 @@ public class PDFGenerator {
 		//Adicionar a tabela ao documento
 		document.add(table);
 	}
+
+	private PdfPCell createCell(Paragraph paragraph) {
+		
+		PdfPCell cell = new PdfPCell(paragraph);
+		cell.setBorder(Rectangle.NO_BORDER);
+		return cell;
+	}
+
 	private PdfPCell createCell(String text) {
-	
+		
 		PdfPCell cell = new PdfPCell(new Phrase(text));
 		cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
 		return cell;

@@ -21,12 +21,66 @@ public class MainTest {
 		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
 		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
 		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
-		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
 		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
-		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, true, true, false, false, true, false));
-		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, true, true, false, false, true, false));
-		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, true, true, false, false, true, false));
-		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, false, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, true, false, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.COLOR, true, false, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, false, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, false, true, true, true, false, false, true, true));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
+		Manager.getInstance().getMovements().add(new Movement(Strategy.SHAPE, true, true, true, true, false, false, true, false));
 		
 		//Finishing test
 		Manager.getInstance().setFinalTime(Calendar.getInstance());
@@ -36,5 +90,4 @@ public class MainTest {
         mPDFGenerator.generateAndShowPDFFile();
 		System.exit(0);
 	}
-
 }
