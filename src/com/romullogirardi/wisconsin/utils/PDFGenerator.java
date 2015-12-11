@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -53,8 +54,10 @@ public class PDFGenerator {
             //Adicionar cabeçalho
             addHeader(document);
 
-            //Adicionar o resumo dos movimentos
-//            addMovementsDescription(document, pdfWriter);
+            //Adicionar a sequência de categorias
+            addCategoriesSequence(document);
+            
+            //Adicionar a tabela com o resumo dos movimentos
             addMovementsDescriptionTable(document, pdfWriter);
             
     		//Adicionar a tabela 1 da área de escore
@@ -62,9 +65,6 @@ public class PDFGenerator {
 
             //Adicionar a tabela 2 da área de escore
             addScoresArea2(document);
-            
-            //Teste
-            test(document);
             
          } catch (DocumentException documentException) {
              documentException.printStackTrace();
@@ -83,7 +83,6 @@ public class PDFGenerator {
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
         document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
 	}
 	
 	///////////////////////////////////////////////////////////////////// CABEÇALHO //////////////////////////////////////////////////////////////////////
@@ -92,68 +91,61 @@ public class PDFGenerator {
         document.add(new Paragraph("Data: " + Manager.getInstance().getTestDate()));
         document.add(new Paragraph("Duração: " + Manager.getInstance().getTestDuration()));
         document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
+	}
+	
+	///////////////////////////////////////////////////////////// SEQUÊNCIA DE CATEGORIAS /////////////////////////////////////////////////////////////////
+	private void addCategoriesSequence(Document document) throws DocumentException {
+		
+		//Ler o número total de categorias completadas
+		int completedCategoriesNumber = Manager.getInstance().getCategorySequenceNumber() - 1;
+		
+		Paragraph paragraph = new Paragraph();
+		paragraph.setAlignment(Element.ALIGN_CENTER);
+		paragraph.add("SEQUÊNCIA DE CATEGORIAS: ");
+		Chunk colorChunk1 = new Chunk(Strategy.COLOR.getFirstLetter());
+		if(completedCategoriesNumber > 0)
+			colorChunk1.setUnderline(2.5f, 4);
+		paragraph.add(colorChunk1);
+		Chunk shapeChunk1 = new Chunk(Strategy.SHAPE.getFirstLetter());
+		if(completedCategoriesNumber > 1)
+			shapeChunk1.setUnderline(2.5f, 4);
+		paragraph.add("  ");
+		paragraph.add(shapeChunk1);
+		Chunk numberChunk1 = new Chunk(Strategy.NUMBER.getFirstLetter());
+		if(completedCategoriesNumber > 2)
+			numberChunk1.setUnderline(2.5f, 4);
+		paragraph.add("  ");
+		paragraph.add(numberChunk1);
+		Chunk colorChunk2 = new Chunk(Strategy.COLOR.getFirstLetter());
+		if(completedCategoriesNumber > 3)
+			colorChunk2.setUnderline(2.5f, 4);
+		paragraph.add("  ");
+		paragraph.add(colorChunk2);
+		Chunk shapeChunk2 = new Chunk(Strategy.SHAPE.getFirstLetter());
+		if(completedCategoriesNumber > 4)
+			shapeChunk2.setUnderline(2.5f, 4);
+		paragraph.add("  ");
+		paragraph.add(shapeChunk2);
+		Chunk numberChunk2 = new Chunk(Strategy.NUMBER.getFirstLetter());
+		if(completedCategoriesNumber > 5)
+			numberChunk2.setUnderline(2.5f, 4);
+		paragraph.add("  ");
+		paragraph.add(numberChunk2);
+		
+		document.add(paragraph);
 	}
 	
 	////////////////////////////////////////////////////////////// RESUMO DOS MOVIMENTOS /////////////////////////////////////////////////////////////////
-//	private void addMovementsDescription(Document document, PdfWriter pdfWriter) throws DocumentException {
-//        Strategy previousStrategy = null;
-//        int repeatedSuccessCounter = 0;
-//		for(int index = 0; index < Manager.getInstance().getMovements().size(); index++) {
-//			
-//			Movement movement = Manager.getInstance().getMovements().get(index);
-//			String paragraphText = "";
-//			//Colocar linha divisória e o indicador de categoria, caso necessário
-//			if(!movement.getCurrentStrategy().equals(previousStrategy)) {
-//    			if(previousStrategy != null) {
-//    				paragraphText += (!movement.getCurrentStrategy().equals(previousStrategy)) ? "__________________\n" : "";
-//    				repeatedSuccessCounter = 0;
-//    			}
-//    			paragraphText += movement.getCurrentStrategy().getFirstLetter() + "    ";
-//			}
-//			//Senão, inserir espaço vazio
-//			else {
-//    			paragraphText += "      ";
-//			}
-//			//Inserir o índice de acerto sublinhado
-//			if(movement.isPreviousSuccess() && movement.isSuccess()) {
-//				repeatedSuccessCounter++;
-//			}
-//			else if(!movement.isPreviousSuccess() && movement.isSuccess()) {
-//				repeatedSuccessCounter = 1;
-//			}
-//			else {
-//				repeatedSuccessCounter = 0;
-//			}
-//			paragraphText += ((repeatedSuccessCounter != 0) ? String.valueOf(repeatedSuccessCounter) : "  ") + "    ";
-//			//Inserir o índice do movimento
-//			paragraphText += (index + 1) + ".    ";
-//			//Inserir os indicadores de estratégia
-//			paragraphText += movement.getReportDescription();
-//			//Inserir indicador de perseveratividade
-//			paragraphText += (movement.isPerseverative()) ? " p" : "";
-//			//Pular linha
-//			paragraphText += "\n";
-//			//Guardar referências deste movimento
-//			previousStrategy = movement.getCurrentStrategy();
-//			//Adicionar linha ao relatório
-//			document.add(new Paragraph(paragraphText));
-//		}
-//		
-//        document.add(new Paragraph(" "));
-//        document.add(new Paragraph(" "));
-//	}
-
 	private void addMovementsDescriptionTable(Document document, PdfWriter pdfWriter) throws DocumentException {
     
 		//Definir número de colunas da tabela
 		PdfPTable table = new PdfPTable(4);
 		table.setWidthPercentage(100);
+		table.setSpacingBefore(4);
 		
 		//Inicializar variáveis de controle
-		Strategy previousStrategy = null;
-        int repeatedSuccessCounter = 0;
         Paragraph paragraph;
+        PdfPCell cellColumn1, cellColumn2, cellColumn3, cellColumn4;
         Paragraph paragraphColumn1 = new Paragraph();
         Paragraph paragraphColumn2 = new Paragraph();
         Paragraph paragraphColumn3 = new Paragraph();
@@ -179,10 +171,10 @@ public class PDFGenerator {
 			paragraph.setFont(new Font(FontFamily.HELVETICA, 10));
 			
 			//Colocar linha divisória e o indicador de categoria, caso necessário
+			Strategy previousStrategy = (movement.getPreviousMovement() != null) ? movement.getPreviousMovement().getCurrentStrategy() : null;
 			if(!movement.getCurrentStrategy().equals(previousStrategy)) {
     			if(previousStrategy != null) {
     				paragraph.add(((!movement.getCurrentStrategy().equals(previousStrategy)) ? "______________________\n" : ""));
-    				repeatedSuccessCounter = 0;
     			}
     			paragraph.add(movement.getCurrentStrategy().getFirstLetter() + "    ");
 			}
@@ -191,31 +183,19 @@ public class PDFGenerator {
     			paragraph.add("      ");
 			}
 			//Inserir o índice de acerto sublinhado
-			if(movement.isPreviousSuccess() && movement.isSuccess()) {
-				repeatedSuccessCounter++;
-			}
-			else if(!movement.isPreviousSuccess() && movement.isSuccess()) {
-				repeatedSuccessCounter = 1;
-			}
-			else {
-				repeatedSuccessCounter = 0;
-			}
-			Chunk repeatedSuccessCounterChunk = new Chunk(String.valueOf(repeatedSuccessCounter));
+			int repeatedSuccessCounter = movement.getRepeatedSuccessCounter();
+			Chunk repeatedSuccessCounterChunk = (repeatedSuccessCounter != 0) ? new Chunk(" " + String.valueOf(repeatedSuccessCounter) + " ") : new Chunk("    ");
 			repeatedSuccessCounterChunk.setUnderline(1.0f, -1.5f);
-			if(repeatedSuccessCounter != 0)
-				paragraph.add(repeatedSuccessCounterChunk);
-			else
-				paragraph.add("  ");
+			paragraph.add(repeatedSuccessCounterChunk);
 			paragraph.add("    ");
 			//Inserir o índice do movimento
-			paragraph.add((index + 1) + ".    ");
-			//Inserir os indicadores de estratégia
 			if(!movement.isSuccess())
 				paragraph.add("(");
+			paragraph.add((index + 1) + ".  ");
+			//Inserir os indicadores de estratégia
 			Chunk colorChunk = new Chunk(Strategy.COLOR.getFirstLetter());
 			if(movement.isColorSuccess())
 				colorChunk.setUnderline(2.0f, 3);
-//			paragraph.add("  ");
 			paragraph.add(colorChunk);
 			Chunk shapeChunk = new Chunk(Strategy.SHAPE.getFirstLetter());
 			if(movement.isShapeSuccess())
@@ -239,134 +219,142 @@ public class PDFGenerator {
 			//Guardar referências deste movimento
 			previousStrategy = movement.getCurrentStrategy();
 			//Adicionar parágrafo à tabela ou pular linha
-			if(index == 15 || index == 31 || index == 47 || index == 63) 
-				table.addCell(createCell(paragraph));
-			else
-				paragraph.add("\n");
+			paragraph.add("\n\n\n");
+			if(index == 15) {
+				cellColumn1 = createParagraphCell(paragraph);
+				cellColumn1.setBorder(Rectangle.TOP | Rectangle.LEFT | Rectangle.BOTTOM);
+				table.addCell(cellColumn1);
+			}
+			else if(index == 31) {
+				cellColumn2 = createParagraphCell(paragraph);
+				cellColumn2.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
+				table.addCell(cellColumn2);
+			}
+			else if(index == 47) {
+				cellColumn3 = createParagraphCell(paragraph);
+				cellColumn3.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
+				table.addCell(cellColumn3);
+			}
+			else if(index == 63) {
+				cellColumn4 = createParagraphCell(paragraph);
+				cellColumn4.setBorder(Rectangle.TOP | Rectangle.RIGHT | Rectangle.BOTTOM);
+				table.addCell(cellColumn4);
+			}
 		}
 		
 		document.add(table);
 		
         document.add(new Paragraph(" "));
-//        Paragraph paragraphTest = new Paragraph();
-//        paragraphTest.add("Parágrafo");
-//        paragraphTest.add(" ");
-//        paragraphTest.add("Teste ");
-//        Chunk chunk1 = new Chunk("Sublinhado");
-//        chunk1.setUnderline(1.5f, -1);
-//        paragraphTest.add(chunk1);
-//        Chunk chunk2 = new Chunk("Riscado");
-//        chunk2.setUnderline(1.5f, 4);
-//        paragraphTest.add(chunk2);
-//        document.add(paragraphTest);
-        document.add(new Paragraph(" "));
-	}
-	
-	private void fillColumnText(PdfPTable table, Paragraph columnText, int initialMovementIndex, int finalMovementIndex) {
-		
 	}
 	
 	////////////////////////////////////////////////////////////// ÁREA DE ESCORES 1 /////////////////////////////////////////////////////////////////////
 	private void addScoresArea1(Document document) throws DocumentException {
 
+		//Apresentar título da área de escores
+		Paragraph paragraph = new Paragraph("ÁREA DE ESCORE");
+		paragraph.setAlignment(Element.ALIGN_CENTER);
+		document.add(paragraph);
+		
 		//Definir número de colunas da tabela
 		PdfPTable table = new PdfPTable(5);
+		table.setWidthPercentage(100);
+		table.setWidths(new int[] {4, 1, 1, 1, 1});
+		table.setSpacingBefore(4);
 		
 		//Inserir 1ª linha (Descrição das colunas)
-		table.addCell(createCell(""));
-		table.addCell(createCell("Escore bruto"));
-		table.addCell(createCell("Escore padrão"));
-		table.addCell(createCell("Escore T"));
-		table.addCell(createCell("Percentil"));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell("Escore bruto"));
+		table.addCell(createPhraseCell("Escore padrão"));
+		table.addCell(createPhraseCell("Escore T"));
+		table.addCell(createPhraseCell("Percentil"));
 
 		//Inserir 2ª linha (Número de Ensaios Administrados)
-		table.addCell(createCell("Número de Ensaios Administrados"));
-		table.addCell(createCell(String.valueOf(Manager.getInstance().getMovements().size())));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Número de Ensaios Administrados"));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getMovements().size())));
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
 
 		//Inserir 3ª linha (Número Total Correto)
-		table.addCell(createCell("Número Total Correto"));
-		table.addCell(createCell(String.valueOf(Manager.getInstance().getNumberOfRightMovements())));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Número Total Correto"));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getNumberOfRightMovements())));
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
 
 		//Inserir 4ª linha (Número Total de Erros)
-		table.addCell(createCell("Número Total de Erros"));
-		table.addCell(createCell(String.valueOf(Manager.getInstance().getNumberOfWrongMovements())));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Número Total de Erros"));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getNumberOfWrongMovements())));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 5ª linha (Percentual de Erros)
-		table.addCell(createCell("Percentual de Erros"));
-		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfWrongMovements()/Manager.getInstance().getMovements().size()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Percentual de Erros"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfWrongMovements()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 6ª linha (Respostas Perseverativas)
-		table.addCell(createCell("Respostas Perseverativas"));
-		table.addCell(createCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfPerseverativeMovements()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Respostas Perseverativas"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfPerseverativeMovements()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 7ª linha (Percentual de Respostas Perseverativas)
-		table.addCell(createCell("Percentual de Respostas Perseverativas"));
-		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeMovements()/Manager.getInstance().getMovements().size()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Percentual de Respostas Perseverativas"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeMovements()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 8ª linha (Erros Perseverativos)
-		table.addCell(createCell("Erros Perseverativos"));
-		table.addCell(createCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfPerseverativeErrors()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Erros Perseverativos"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfPerseverativeErrors()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 9ª linha (Percentual de Erros Perseverativos)
-		table.addCell(createCell("Percentual de Erros Perseverativos"));
-		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeErrors()/Manager.getInstance().getMovements().size()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Percentual de Erros Perseverativos"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfPerseverativeErrors()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 10ª linha (Erros Não-perseverativos)
-		table.addCell(createCell("Erros Não-perseverativos"));
-		table.addCell(createCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Erros Não-perseverativos"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 11ª linha (Percentual de Erros Não-perseverativos)
-		table.addCell(createCell("Percentual de Erros Não-perseverativos"));
-		table.addCell(createCell(String.valueOf(Math.round(100 * (Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors())/Manager.getInstance().getMovements().size()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Percentual de Erros Não-perseverativos"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * (Manager.getInstance().getNumberOfWrongMovements() - Manager.getInstance().getNumberOfPerseverativeErrors())/Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Inserir 12ª linha (Respostas de Nível Conceitual)
-		table.addCell(createCell("Respostas de Nível Conceitual"));
-		table.addCell(createCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfConceptualLevelAnswers()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Respostas de Nível Conceitual"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(Manager.getInstance().getNumberOfConceptualLevelAnswers()))));
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
+		table.addCell(createGrayCell());
 
 		//Inserir 13ª linha (Percentual de Respostas de Nível Conceitual)
-		table.addCell(createCell("Percentual de Respostas de Nível Conceitual"));
-		table.addCell(createCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfConceptualLevelAnswers()/Manager.getInstance().getMovements().size()))));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
-		table.addCell(createCell(""));
+		table.addCell(createPhraseCell("Percentual de Respostas de Nível Conceitual"));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfConceptualLevelAnswers()/Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell(""));
 
 		//Adicionar a tabela ao documento
 		document.add(table);
 		
-        document.add(new Paragraph(" "));
         document.add(new Paragraph(" "));
 	}
 	
@@ -375,31 +363,33 @@ public class PDFGenerator {
 
 		//Definir número de colunas da tabela
 		PdfPTable table = new PdfPTable(3);
+		table.setWidthPercentage(100);
+		table.setWidths(new int[] {2, 1, 1});
 		
 		//Inserir 1ª linha (Descrição das colunas)
-		table.addCell(createCell(""));
-		table.addCell(createCell("Escore bruto"));
-		table.addCell(createCell("Percentil"));
+		table.addCell(createPhraseCell(""));
+		table.addCell(createPhraseCell("Escore bruto"));
+		table.addCell(createPhraseCell("Percentil"));
 
 		//Inserir 2ª linha (Número de Categorias Completadas)
-		table.addCell(createCell("Número de Categorias Completadas"));
-		table.addCell(createCell(String.valueOf("")));
-		table.addCell(createCell(String.valueOf("")));
+		table.addCell(createPhraseCell("Número de Categorias Completadas"));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getCategorySequenceNumber() - 1)));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * (Manager.getInstance().getCategorySequenceNumber() - 1) / 6))));
 
 		//Inserir 3ª linha (Ensaios para Completar a Primeira Categoria)
-		table.addCell(createCell("Ensaios para Completar a Primeira Categoria"));
-		table.addCell(createCell(String.valueOf("")));
-		table.addCell(createCell(String.valueOf("")));
+		table.addCell(createPhraseCell("Ensaios para Completar a Primeira Categoria"));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getNumberOfTriesToCompleteFirstCategory())));
+		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfTriesToCompleteFirstCategory() / Manager.getInstance().getMovements().size()))));
 
 		//Inserir 4ª linha (Fracasso em Manter o Contexto)
-		table.addCell(createCell("Fracasso em Manter o Contexto"));
-		table.addCell(createCell(String.valueOf("")));
-		table.addCell(createCell(String.valueOf("")));
+		table.addCell(createPhraseCell("Fracasso em Manter o Contexto"));
+		table.addCell(createPhraseCell(String.valueOf("")));
+		table.addCell(createPhraseCell(String.valueOf("")));
 
 		//Inserir 5ª linha (Aprendendo a aprender)
-		table.addCell(createCell("Aprendendo a aprender"));
-		table.addCell(createCell(String.valueOf("")));
-		table.addCell(createCell(String.valueOf("")));
+		table.addCell(createPhraseCell("Aprendendo a aprender"));
+		table.addCell(createPhraseCell(String.valueOf("")));
+		table.addCell(createPhraseCell(String.valueOf("")));
 
 		//Adicionar a tabela ao documento
 		document.add(table);
@@ -408,51 +398,24 @@ public class PDFGenerator {
         document.add(new Paragraph(" "));
 	}
 
-	private void test(Document document) throws DocumentException {
-		
-		//Definir número de colunas da tabela
-		PdfPTable table = new PdfPTable(3);
-		
-		//Definir tabelas de cada coluna
-		PdfPTable table1 = new PdfPTable(1);
-		table1.addCell(createCell("[1][1]"));
-		table1.addCell(createCell("[2][1]"));
-		table1.addCell(createCell("[3][1]"));
-		PdfPCell pdfPCellTable1 = new PdfPCell(table1);
-		pdfPCellTable1.setPadding(0);
-		table.addCell(pdfPCellTable1);
-
-		PdfPTable table2 = new PdfPTable(1);
-		table2.addCell(createCell("[1][2]"));
-		table2.addCell(createCell("[2][2]"));
-		table2.addCell(createCell("[3][2]"));
-		PdfPCell pdfPCellTable2 = new PdfPCell(table2);
-		pdfPCellTable2.setPadding(0);
-		table.addCell(pdfPCellTable2);
-		
-		PdfPTable table3 = new PdfPTable(1);
-		table3.addCell(createCell("[1][3]"));
-		table3.addCell(createCell("[2][3]"));
-		table3.addCell(createCell("[3][3]"));
-		PdfPCell pdfPCellTable3 = new PdfPCell(table3);
-		pdfPCellTable3.setPadding(0);
-		table.addCell(pdfPCellTable3);
-
-		//Adicionar a tabela ao documento
-		document.add(table);
-	}
-
-	private PdfPCell createCell(Paragraph paragraph) {
+	private PdfPCell createParagraphCell(Paragraph paragraph) {
 		
 		PdfPCell cell = new PdfPCell(paragraph);
 		cell.setBorder(Rectangle.NO_BORDER);
 		return cell;
 	}
 
-	private PdfPCell createCell(String text) {
+	private PdfPCell createPhraseCell(String text) {
 		
 		PdfPCell cell = new PdfPCell(new Phrase(text));
 		cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
+		return cell;
+	}
+	
+	private PdfPCell createGrayCell() {
+		
+		PdfPCell cell = new PdfPCell();
+		cell.setBackgroundColor(BaseColor.GRAY);
 		return cell;
 	}
 	

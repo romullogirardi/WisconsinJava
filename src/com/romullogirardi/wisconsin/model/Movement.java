@@ -5,8 +5,10 @@ import com.romullogirardi.wisconsin.model.Enums.Strategy;
 public class Movement {
 
 	//ATTRIBUTES
+	private int categorySequenceNumber;
 	private Strategy currentStrategy;
-	private boolean previousSuccess;
+	private Movement previousMovement;
+	private int repeatedSuccessCounter;
 	private boolean success;
 	private boolean colorSuccess;
 	private boolean shapeSuccess;
@@ -16,10 +18,12 @@ public class Movement {
 	private boolean perseverative;
 	
 	//CONSTRUCTOR
-	public Movement(Strategy currentStrategy, boolean previousSuccess, boolean success, boolean colorSuccess, 
-			boolean shapeSuccess, boolean numberSuccess, boolean otherSuccess, boolean ambiguous, boolean perseverative) {
+	public Movement(int categorySequenceNumber, Strategy currentStrategy, Movement previousMovement, int repeatedSuccessCounter,
+			boolean success, boolean colorSuccess, boolean shapeSuccess, boolean numberSuccess, boolean otherSuccess, boolean ambiguous, boolean perseverative) {
+		this.categorySequenceNumber = categorySequenceNumber;
 		this.currentStrategy = currentStrategy;
-		this.previousSuccess = previousSuccess;
+		this.previousMovement = previousMovement;
+		this.repeatedSuccessCounter = repeatedSuccessCounter;
 		this.success = success;
 		this.colorSuccess = colorSuccess;
 		this.shapeSuccess = shapeSuccess;
@@ -30,6 +34,14 @@ public class Movement {
 	}
 
 	//GETTERS AND SETTERS
+	public int getCategorySequenceNumber() {
+		return categorySequenceNumber;
+	}
+
+	public void setCategorySequenceNumber(int categorySequenceNumber) {
+		this.categorySequenceNumber = categorySequenceNumber;
+	}
+
 	public Strategy getCurrentStrategy() {
 		return currentStrategy;
 	}
@@ -38,12 +50,20 @@ public class Movement {
 		this.currentStrategy = currentStrategy;
 	}
 
-	public boolean isPreviousSuccess() {
-		return previousSuccess;
+	public Movement getPreviousMovement() {
+		return previousMovement;
 	}
 
-	public void setPreviousSuccess(boolean previousSuccess) {
-		this.previousSuccess = previousSuccess;
+	public void setPreviousMovement(Movement previousMovement) {
+		this.previousMovement = previousMovement;
+	}
+
+	public int getRepeatedSuccessCounter() {
+		return repeatedSuccessCounter;
+	}
+
+	public void setRepeatedSuccessCounter(int repeatedSuccessCounter) {
+		this.repeatedSuccessCounter = repeatedSuccessCounter;
 	}
 
 	public boolean isSuccess() {

@@ -23,10 +23,10 @@ public class Manager {
 	private Card lastCardInPosition4 = null;
 	private Card cardToBePlayed = null;
 	private ArrayList<Card> cardsToBePlayed = new ArrayList<Card>();
-//	private boolean lastMovementSuccess = false;
 	private ArrayList<Movement> movements = new ArrayList<Movement>();
 	private boolean gameFinished = false;
-	private int successCounter = 0;
+	private int repeatedSuccessCounter = 0;
+	private int categorySequenceNumber = 1;
 	private Strategy wrongPerseverativeStrategy = null;
 	
 	//SINGLETON IMPLEMENTATION
@@ -114,16 +114,20 @@ public class Manager {
 		return cardsToBePlayed;
 	}
 
-//	public boolean isLastMovementSuccess() {
-//		return lastMovementSuccess;
-//	}
-
 	public ArrayList<Movement> getMovements() {
 		return movements;
 	}
 	
 	public boolean isGameFinished() {
 		return gameFinished;
+	}
+
+	public int getCategorySequenceNumber() {
+		return categorySequenceNumber;
+	}
+
+	public void setCategorySequenceNumber(int categorySequenceNumber) {
+		this.categorySequenceNumber = categorySequenceNumber;
 	}
 
 	//OTHER METHODS
@@ -160,12 +164,12 @@ public class Manager {
 			(strategy.equals(Strategy.NUMBER) && numberSuccess)) {
 			success = true;
 			if(previousMovement != null && previousMovement.isSuccess())
-				this.successCounter++;
+				this.repeatedSuccessCounter++;
 			else
-				this.successCounter = 1;
+				this.repeatedSuccessCounter = 1;
 		}
 		else {
-			this.successCounter = 0;
+			this.repeatedSuccessCounter = 0;
 		}
 		if(!colorSuccess && !shapeSuccess && !numberSuccess) {
 			otherSuccess = true;
@@ -191,19 +195,19 @@ public class Manager {
 			}
 		}
 		//2º caso
-		if(previousMovement != null && previousMovement.getCurrentStrategy().equals(strategy)) {
+		if(previousMovement != null && !previousMovement.getCurrentStrategy().equals(strategy)) {
 			if(wrongStrategy != null && wrongStrategy.equals(previousMovement.getCurrentStrategy())) {
 				perseverative = true;
 			}
 		}
 		
-		Movement movement = new Movement(strategy, (previousMovement != null) ? previousMovement.isSuccess() : false, 
+		Movement movement = new Movement(categorySequenceNumber, strategy, previousMovement, repeatedSuccessCounter, 
 				success, colorSuccess, shapeSuccess, numberSuccess, otherSuccess, ambiguous, perseverative);
 		movements.add(movement);
 		changeLastCardInPosition(position);
 		nextCardToBePlayed();
-		System.out.println(this.successCounter);
-		if(this.successCounter >= Constants.SUCCESS_COUNTER_CHANGE_POINT) {
+		System.out.println(this.repeatedSuccessCounter);
+		if(this.repeatedSuccessCounter >= Constants.SUCCESS_COUNTER_CHANGE_POINT) {
 			changeStrategy();
 		}
 	}
@@ -259,7 +263,8 @@ public class Manager {
 			default:
 				break;
 		}
-		successCounter = 0;
+		repeatedSuccessCounter = 0;
+		categorySequenceNumber++;
 	}
 	
 	private void nextCardToBePlayed() {
@@ -343,5 +348,16 @@ public class Manager {
 //			}
 //		}
 		return numberOfPerseverativeErrors;
+	}
+
+	public int getNumberOfTriesToCompleteFirstCategory() {
+
+		int numberOfTriesToCompleteFirstCategory = 0;
+		for(Movement movement : movements) {
+			if(movement.getCategorySequenceNumber() == 1) {
+				numberOfTriesToCompleteFirstCategory++;
+			}
+		}
+		return numberOfTriesToCompleteFirstCategory;
 	}
 }
