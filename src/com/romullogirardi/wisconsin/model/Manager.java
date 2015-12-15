@@ -360,4 +360,26 @@ public class Manager {
 		}
 		return numberOfTriesToCompleteFirstCategory;
 	}
+	
+	public int getMovementsByCategory(int categorySequenceNumber) {
+		
+		int numberOfMovements = 0;
+		for(Movement movement : movements) {
+			if(movement.getCategorySequenceNumber() == categorySequenceNumber) {
+				numberOfMovements++;
+			}
+		}
+		return numberOfMovements;
+	}
+
+	public int getErrorsByCategory(int categorySequenceNumber) {
+		
+		int numberOfErrors = 0;
+		for(Movement movement : movements) {
+			if(movement.getCategorySequenceNumber() == categorySequenceNumber && !movement.isSuccess()) {
+				numberOfErrors++;
+			}
+		}
+		return numberOfErrors;
+	}
 }

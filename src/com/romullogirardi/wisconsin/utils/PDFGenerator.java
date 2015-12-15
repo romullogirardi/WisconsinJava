@@ -58,13 +58,16 @@ public class PDFGenerator {
             addCategoriesSequence(document);
             
             //Adicionar a tabela com o resumo dos movimentos
-            addMovementsDescriptionTable(document, pdfWriter);
+            addMovementsDescriptionTable(document);
             
     		//Adicionar a tabela 1 da área de escore
             addScoresArea1(document);
 
             //Adicionar a tabela 2 da área de escore
             addScoresArea2(document);
+
+            //Adicionar a tabela 3 da área de escore
+            addScoresArea3(document);
             
          } catch (DocumentException documentException) {
              documentException.printStackTrace();
@@ -136,7 +139,7 @@ public class PDFGenerator {
 	}
 	
 	////////////////////////////////////////////////////////////// RESUMO DOS MOVIMENTOS /////////////////////////////////////////////////////////////////
-	private void addMovementsDescriptionTable(Document document, PdfWriter pdfWriter) throws DocumentException {
+	private void addMovementsDescriptionTable(Document document) throws DocumentException {
     
 		//Definir número de colunas da tabela
 		PdfPTable table = new PdfPTable(4);
@@ -395,9 +398,76 @@ public class PDFGenerator {
 		document.add(table);
 		
         document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
+	}
+	
+	////////////////////////////////////////////////////////////// ÁREA DE ESCORES 3 /////////////////////////////////////////////////////////////////////
+	private void addScoresArea3(Document document) throws DocumentException {
+		
+		
+		//Adicionar texto acima da tabela
+		Paragraph paragraph = new Paragraph();
+		paragraph.add("Tabela normativa       ");
+		Chunk chunk = new Chunk("IDADE: 30-0 a 39-11/ESCOLARIDADE: 13 - 15 anos", new Font(FontFamily.HELVETICA, 12, Font.ITALIC));
+		chunk.setUnderline(1.0f, -1.5f);
+		paragraph.add(chunk);
+		document.add(paragraph);
+		
+		//Inserir 1ª linha (Título da tabela)
+		PdfPTable titleTable = new PdfPTable(1);
+		titleTable.setWidthPercentage(100);
+		titleTable.setSpacingBefore(4);
+		titleTable.addCell(createPhraseCell("Folha de Trabalho de Aprendendo a Aprender"));
+		document.add(titleTable);
+		
+		//Definir número de colunas do corpo da tabela
+		PdfPTable table = new PdfPTable(5);
+		table.setWidthPercentage(100);
+
+		//Inserir 2ª linha (Descrição das colunas)
+		table.addCell(createPhraseCell("Número da Categoria"));
+		table.addCell(createPhraseCell("Número de Ensaios"));
+		table.addCell(createPhraseCell("Erros"));
+		table.addCell(createPhraseCell("Percentual de Erros"));
+		table.addCell(createPhraseCell("Escore da Diferença Percentual de Erros"));
+
+		//Inserir da 3ª a 8ª linha (Dados dos ensaios das 6 categorias)
+		float percentageDiferenceTotal = 0;
+		for(int categorySequenceNumber = 1; categorySequenceNumber <= 6; categorySequenceNumber++) {
+			table.addCell(createPhraseCell(String.valueOf(categorySequenceNumber)));
+			if(Manager.getInstance().getMovementsByCategory(categorySequenceNumber) != 0) {
+				table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getMovementsByCategory(categorySequenceNumber))));
+				table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getErrorsByCategory(categorySequenceNumber))));
+				table.addCell(createPhraseCell(String.valueOf(((float) (100 * Manager.getInstance().getErrorsByCategory(categorySequenceNumber) / Manager.getInstance().getMovementsByCategory(categorySequenceNumber))))));
+				if(categorySequenceNumber != 1) {
+					float percentageDiference = (100 * Manager.getInstance().getErrorsByCategory(categorySequenceNumber) / Manager.getInstance().getMovementsByCategory(categorySequenceNumber)) - 
+							(100 * Manager.getInstance().getErrorsByCategory(categorySequenceNumber - 1) / Manager.getInstance().getMovementsByCategory(categorySequenceNumber - 1));
+					percentageDiferenceTotal += percentageDiference;
+					table.addCell(createPhraseCell(String.valueOf(percentageDiference)));
+				}
+				else {
+					table.addCell(createGrayCell());
+				}
+			}
+			else {
+				table.addCell(createGrayCell());
+				table.addCell(createGrayCell());
+				table.addCell(createGrayCell());
+				table.addCell(createGrayCell());
+			}
+		}
+		
+		//Inserir a 9ª linha (Diferença média das porcentagens)
+		table.addCell(createPhraseCell("", (Rectangle.TOP | Rectangle.LEFT | Rectangle.BOTTOM)));
+		table.addCell(createPhraseCell("", (Rectangle.TOP | Rectangle.BOTTOM)));
+		table.addCell(createPhraseCell("", (Rectangle.TOP | Rectangle.BOTTOM)));
+		table.addCell(createPhraseCell("Diferença Média", (Rectangle.TOP | Rectangle.RIGHT | Rectangle.BOTTOM)));
+		table.addCell(createPhraseCell(String.valueOf(percentageDiferenceTotal)));
+
+		//Adicionar a tabela ao documento
+		document.add(table);
 	}
 
+	////////////////////////////////////////////////////////// CRIAÇÃO DE CÉLULAS DE TABELA /////////////////////////////////////////////////////////////////
 	private PdfPCell createParagraphCell(Paragraph paragraph) {
 		
 		PdfPCell cell = new PdfPCell(paragraph);
@@ -412,6 +482,14 @@ public class PDFGenerator {
 		return cell;
 	}
 	
+	private PdfPCell createPhraseCell(String text, int borderSettings) {
+		
+		PdfPCell cell = new PdfPCell(new Phrase(text));
+		cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
+		cell.setBorder(borderSettings);
+		return cell;
+	}
+
 	private PdfPCell createGrayCell() {
 		
 		PdfPCell cell = new PdfPCell();
@@ -419,6 +497,7 @@ public class PDFGenerator {
 		return cell;
 	}
 	
+	////////////////////////////////////////////////////////////// APRESENTAÇÃO DO PDF /////////////////////////////////////////////////////////////////////
 	public void showPDFFile() {
 		
 		if (Desktop.isDesktopSupported()) {
