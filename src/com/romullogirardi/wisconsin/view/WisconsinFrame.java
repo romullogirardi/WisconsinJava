@@ -217,7 +217,8 @@ public class WisconsinFrame implements MouseListener {
 		      try {
 		        Clip clip = AudioSystem.getClip();
 		        AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-			        WisconsinFrame.class.getResourceAsStream(Constants.SOUNDS_FOLDER + "/" + soundFileName));
+//		        WisconsinFrame.class.getResourceAsStream(Constants.SOUNDS_FOLDER + "/" + soundFileName));
+		        WisconsinFrame.class.getResource(Constants.SOUNDS_FOLDER + "/" + soundFileName));
 			        clip.open(inputStream);
 			        clip.start(); 
 		      } catch (Exception e) {
