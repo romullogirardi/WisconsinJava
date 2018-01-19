@@ -16,7 +16,7 @@ public class Constants {
 	public static final Card REFERENCE_CARD_3 = new Card(Color.YELLOW, Shape.CROSS, Number.THREE);
 	public static final Card REFERENCE_CARD_4 = new Card(Color.BLUE, Shape.CIRCLE, Number.FOUR);
 	public static final int SUCCESS_COUNTER_CHANGE_POINT = 10;
-	public static final String PDF_FILE_PATH = "C:\\Users\\Romullo Girardi\\Desktop\\Relatórios";
+	public static final String PDF_FILE_PATH = "C:\\Users\\Romullo Girardi\\Desktop\\Wisconsin";
 	public static final String PDF_FILE_NAME_PREFIX = "";
 	public static String IMAGES_FOLDER = "/com/romullogirardi/wisconsin/images";
 	public static String ICON_IMAGE_FILE_NAME = "icone.png";
