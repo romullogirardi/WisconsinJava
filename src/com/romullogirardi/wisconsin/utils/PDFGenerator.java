@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -27,6 +29,9 @@ public class PDFGenerator {
 	//ATTRIBUTE
 	private String pdfFilePath;
 	
+	//VARIABLE (Aprendendo a aprender)
+	float percentageDiferenceTotal = 0;
+	
 	//CONSTRUCTOR
 	public PDFGenerator(String pdfFilePath) {
 		this.pdfFilePath = pdfFilePath;
@@ -45,7 +50,7 @@ public class PDFGenerator {
         try {
         	
         	//Abrir PDF
-        	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFilePath));
+        	PdfWriter.getInstance(document, new FileOutputStream(pdfFilePath));
             document.open();
 
             //Adicionar título
@@ -62,6 +67,9 @@ public class PDFGenerator {
             
     		//Adicionar a tabela 1 da área de escore
             addScoresArea1(document);
+            
+            //Montar a tabela 3 da área de escore para calcular o escore de "Aprendendo a aprender"
+            mountScoreArea3Table();
 
             //Adicionar a tabela 2 da área de escore
             addScoresArea2(document);
@@ -82,18 +90,18 @@ public class PDFGenerator {
 	
 	//////////////////////////////////////////////////////////////////////// TÍTULO //////////////////////////////////////////////////////////////////////
 	private void addTitle(Document document) throws DocumentException {
-        Paragraph title = new Paragraph("RELATÓRIO - TESTE DE WISCONSIN");
+        Paragraph title = new Paragraph("RELATÓRIO DO TESTE DE CLASSIFICAÇÃO DE CARTAS");
         title.setAlignment(Element.ALIGN_CENTER);
+        title.setFont(new Font(FontFamily.HELVETICA, 13, Font.BOLD));
         document.add(title);
-        document.add(new Paragraph(" "));
 	}
 	
 	///////////////////////////////////////////////////////////////////// CABEÇALHO //////////////////////////////////////////////////////////////////////
 	private void addHeader(Document document) throws DocumentException {
         document.add(new Paragraph("Nome: " + Manager.getInstance().getUserName()));
+        document.add(new Paragraph("Idade: " + Manager.getInstance().getUserAge() + " anos"));
         document.add(new Paragraph("Data: " + Manager.getInstance().getTestDate()));
         document.add(new Paragraph("Duração: " + Manager.getInstance().getTestDuration()));
-        document.add(new Paragraph(" "));
 	}
 	
 	///////////////////////////////////////////////////////////// SEQUÊNCIA DE CATEGORIAS /////////////////////////////////////////////////////////////////
@@ -155,17 +163,26 @@ public class PDFGenerator {
         Paragraph paragraphColumn4 = new Paragraph();
         
         //Varrer todos os movimentos e preencher tabela
-		for(int index = 0; index < Manager.getInstance().getMovements().size(); index++) {
+		for(int index = 0; index < 128; index++) {
 
+			
 			//Guardar referência para o movimento atual
-			Movement movement = Manager.getInstance().getMovements().get(index);
+			Movement movement;
+			if(index < Manager.getInstance().getMovements().size())
+				movement = Manager.getInstance().getMovements().get(index);
+			else if(index == Manager.getInstance().getMovements().size()) {
+				movement = new Movement();
+				movement.setPreviousMovement(Manager.getInstance().getMovements().get(Manager.getInstance().getMovements().size() - 1));
+			}
+			else
+				movement = new Movement();
 
 			//Selecionar coluna do movimento
-			if(index <= 15)
+			if(index <= 31)
 				paragraph = paragraphColumn1;
-			else if(index <= 31)
+			else if(index <= 63)
 				paragraph = paragraphColumn2;
-			else if(index <= 47)
+			else if(index <= 95)
 				paragraph = paragraphColumn3;
 			else 
 				paragraph = paragraphColumn4;
@@ -176,10 +193,13 @@ public class PDFGenerator {
 			//Colocar linha divisória e o indicador de categoria, caso necessário
 			Strategy previousStrategy = (movement.getPreviousMovement() != null) ? movement.getPreviousMovement().getCurrentStrategy() : null;
 			if(!movement.getCurrentStrategy().equals(previousStrategy)) {
-    			if(previousStrategy != null) {
-    				paragraph.add(((!movement.getCurrentStrategy().equals(previousStrategy)) ? "______________________\n" : ""));
-    			}
-    			paragraph.add(movement.getCurrentStrategy().getFirstLetter() + "    ");
+    			if(previousStrategy != null) 
+    				paragraph.add("______________________\n");
+    			
+    			if(!movement.getCurrentStrategy().equals(Strategy.OTHER))
+    				paragraph.add(movement.getCurrentStrategy().getFirstLetter() + "    ");
+    			else
+    				paragraph.add("      ");
 			}
 			//Senão, inserir espaço vazio
 			else {
@@ -194,7 +214,8 @@ public class PDFGenerator {
 			//Inserir o índice do movimento
 			if(!movement.isSuccess())
 				paragraph.add("(");
-			paragraph.add((index + 1) + ".  ");
+			int indexToShow = (index < 64) ? index + 1 : index + 1 - 64;
+			paragraph.add(indexToShow + ".  ");
 			//Inserir os indicadores de estratégia
 			Chunk colorChunk = new Chunk(Strategy.COLOR.getFirstLetter());
 			if(movement.isColorSuccess())
@@ -221,33 +242,33 @@ public class PDFGenerator {
 			paragraph.add((movement.isPerseverative()) ? "  p" : "");
 			//Guardar referências deste movimento
 			previousStrategy = movement.getCurrentStrategy();
-			//Adicionar parágrafo à tabela ou pular linha
-			paragraph.add("\n\n\n");
-			if(index == 15) {
+			//Adicionar parágrafo à tabela ou pular linha 
+			if(index == 31) {
 				cellColumn1 = createParagraphCell(paragraph);
 				cellColumn1.setBorder(Rectangle.TOP | Rectangle.LEFT | Rectangle.BOTTOM);
 				table.addCell(cellColumn1);
 			}
-			else if(index == 31) {
+			else if(index == 63) {
 				cellColumn2 = createParagraphCell(paragraph);
 				cellColumn2.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
 				table.addCell(cellColumn2);
 			}
-			else if(index == 47) {
+			else if(index == 95) {
 				cellColumn3 = createParagraphCell(paragraph);
 				cellColumn3.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
 				table.addCell(cellColumn3);
 			}
-			else if(index == 63) {
+			else if(index == 127) {
 				cellColumn4 = createParagraphCell(paragraph);
 				cellColumn4.setBorder(Rectangle.TOP | Rectangle.RIGHT | Rectangle.BOTTOM);
 				table.addCell(cellColumn4);
 			}
+			else {
+				paragraph.add("\n\n");
+			}
 		}
 		
 		document.add(table);
-		
-        document.add(new Paragraph(" "));
 	}
 	
 	////////////////////////////////////////////////////////////// ÁREA DE ESCORES 1 /////////////////////////////////////////////////////////////////////
@@ -377,21 +398,23 @@ public class PDFGenerator {
 		//Inserir 2ª linha (Número de Categorias Completadas)
 		table.addCell(createPhraseCell("Número de Categorias Completadas"));
 		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getCategorySequenceNumber() - 1)));
-		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * (Manager.getInstance().getCategorySequenceNumber() - 1) / 6))));
+		table.addCell(createPhraseCell(String.valueOf(""/*Math.round(100 * (Manager.getInstance().getCategorySequenceNumber() - 1) / 6)*/)));
 
 		//Inserir 3ª linha (Ensaios para Completar a Primeira Categoria)
 		table.addCell(createPhraseCell("Ensaios para Completar a Primeira Categoria"));
 		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getNumberOfTriesToCompleteFirstCategory())));
-		table.addCell(createPhraseCell(String.valueOf(Math.round(100 * Manager.getInstance().getNumberOfTriesToCompleteFirstCategory() / Manager.getInstance().getMovements().size()))));
+		table.addCell(createPhraseCell(String.valueOf(""/*Math.round(100 * Manager.getInstance().getNumberOfTriesToCompleteFirstCategory() / Manager.getInstance().getMovements().size())*/)));
 
 		//Inserir 4ª linha (Fracasso em Manter o Contexto)
 		table.addCell(createPhraseCell("Fracasso em Manter o Contexto"));
-		table.addCell(createPhraseCell(String.valueOf("")));
+		table.addCell(createPhraseCell(String.valueOf(Manager.getInstance().getNumberOfContextMaintainFailures())));
 		table.addCell(createPhraseCell(String.valueOf("")));
 
 		//Inserir 5ª linha (Aprendendo a aprender)
 		table.addCell(createPhraseCell("Aprendendo a aprender"));
-		table.addCell(createPhraseCell(String.valueOf("")));
+		table.addCell(((Manager.getInstance().getMovementsByCategory(3) >= 10) ? 
+				createPhraseCell(String.valueOf(percentageDiferenceTotal)) :
+				createGrayCell()));
 		table.addCell(createPhraseCell(String.valueOf("")));
 
 		//Adicionar a tabela ao documento
@@ -403,21 +426,36 @@ public class PDFGenerator {
 	////////////////////////////////////////////////////////////// ÁREA DE ESCORES 3 /////////////////////////////////////////////////////////////////////
 	private void addScoresArea3(Document document) throws DocumentException {
 		
+		//Somente adiciona se completou as 2 primeiras categorias 
+		//e executou, pelo menos, 10 movimentos na terceira
+		if(Manager.getInstance().getMovementsByCategory(3) >= 10) {
+
+			//Adicionar texto acima da tabela
+			Paragraph paragraph = new Paragraph();
+			paragraph.add("Tabela normativa       ");
+//			Chunk chunk = new Chunk("IDADE: 30-0 a 39-11/ESCOLARIDADE: 13 - 15 anos", new Font(FontFamily.HELVETICA, 12, Font.ITALIC));
+//			chunk.setUnderline(1.0f, -1.5f);
+//			paragraph.add(chunk);
+			document.add(paragraph);
+			
+			//Inserir 1ª linha (Título da tabela)
+			PdfPTable titleTable = new PdfPTable(1);
+			titleTable.setWidthPercentage(100);
+			titleTable.setSpacingBefore(4);
+			titleTable.addCell(createPhraseCell("Folha de Trabalho de Aprendendo a Aprender"));
+			document.add(titleTable);
+			
+			//Montar tabela
+			PdfPTable table = mountScoreArea3Table();
+	
+			document.add(table);
+		}
+	}
+	
+	private PdfPTable mountScoreArea3Table() {
 		
-		//Adicionar texto acima da tabela
-		Paragraph paragraph = new Paragraph();
-		paragraph.add("Tabela normativa       ");
-		Chunk chunk = new Chunk("IDADE: 30-0 a 39-11/ESCOLARIDADE: 13 - 15 anos", new Font(FontFamily.HELVETICA, 12, Font.ITALIC));
-		chunk.setUnderline(1.0f, -1.5f);
-		paragraph.add(chunk);
-		document.add(paragraph);
-		
-		//Inserir 1ª linha (Título da tabela)
-		PdfPTable titleTable = new PdfPTable(1);
-		titleTable.setWidthPercentage(100);
-		titleTable.setSpacingBefore(4);
-		titleTable.addCell(createPhraseCell("Folha de Trabalho de Aprendendo a Aprender"));
-		document.add(titleTable);
+		//Zerar o percentageDiferenceTotal
+		percentageDiferenceTotal = 0;
 		
 		//Definir número de colunas do corpo da tabela
 		PdfPTable table = new PdfPTable(5);
@@ -431,7 +469,6 @@ public class PDFGenerator {
 		table.addCell(createPhraseCell("Escore da Diferença Percentual de Erros"));
 
 		//Inserir da 3ª a 8ª linha (Dados dos ensaios das 6 categorias)
-		float percentageDiferenceTotal = 0;
 		for(int categorySequenceNumber = 1; categorySequenceNumber <= 6; categorySequenceNumber++) {
 			table.addCell(createPhraseCell(String.valueOf(categorySequenceNumber)));
 			if(Manager.getInstance().getMovementsByCategory(categorySequenceNumber) != 0) {
@@ -462,9 +499,8 @@ public class PDFGenerator {
 		table.addCell(createPhraseCell("", (Rectangle.TOP | Rectangle.BOTTOM)));
 		table.addCell(createPhraseCell("Diferença Média", (Rectangle.TOP | Rectangle.RIGHT | Rectangle.BOTTOM)));
 		table.addCell(createPhraseCell(String.valueOf(percentageDiferenceTotal)));
-
-		//Adicionar a tabela ao documento
-		document.add(table);
+		
+		return table;
 	}
 
 	////////////////////////////////////////////////////////// CRIAÇÃO DE CÉLULAS DE TABELA /////////////////////////////////////////////////////////////////
@@ -505,7 +541,7 @@ public class PDFGenerator {
 		        File myFile = new File(pdfFilePath);
 		        Desktop.getDesktop().open(myFile);
 		    } catch (IOException e) {
-		        System.out.println("Este computador não possui um leitor de PDF instalado");
+		    	JOptionPane.showMessageDialog(null, "Este computador não possui leitor de PDF.", "", 0);
 		    }
 		}
 	}

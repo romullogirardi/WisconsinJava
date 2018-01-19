@@ -5,21 +5,26 @@ import com.romullogirardi.wisconsin.model.Enums.Strategy;
 public class Movement {
 
 	//ATTRIBUTES
-	private int categorySequenceNumber;
-	private Strategy currentStrategy;
-	private Movement previousMovement;
-	private int repeatedSuccessCounter;
-	private boolean success;
-	private boolean colorSuccess;
-	private boolean shapeSuccess;
-	private boolean numberSuccess;
-	private boolean otherSuccess;
-	private boolean ambiguous;
-	private boolean perseverative;
+	private int categorySequenceNumber = 0;
+	private Strategy currentStrategy = Strategy.OTHER;
+	private Movement previousMovement = null;
+	private int repeatedSuccessCounter = 0;
+	private boolean success = true;
+	private boolean colorSuccess = false;
+	private boolean shapeSuccess = false;
+	private boolean numberSuccess = false;
+	private boolean otherSuccess = false;
+	private boolean ambiguous = false;
+	private Strategy perseverativeStrategy = null;
+	private boolean perseverative = false;
+	private boolean contextMaintainFail = false;
+	private boolean conceptualLevelAnswer = false;
 	
-	//CONSTRUCTOR
-	public Movement(int categorySequenceNumber, Strategy currentStrategy, Movement previousMovement, int repeatedSuccessCounter,
-			boolean success, boolean colorSuccess, boolean shapeSuccess, boolean numberSuccess, boolean otherSuccess, boolean ambiguous, boolean perseverative) {
+	//CONSTRUCTORS
+	public Movement(int categorySequenceNumber, Strategy currentStrategy, Movement previousMovement, 
+			int repeatedSuccessCounter, boolean success, boolean colorSuccess, boolean shapeSuccess, 
+			boolean numberSuccess, boolean otherSuccess, boolean ambiguous, Strategy perseverativeStrategy,
+			boolean contextMaintainFail, boolean conceptualLevelAnswer) {
 		this.categorySequenceNumber = categorySequenceNumber;
 		this.currentStrategy = currentStrategy;
 		this.previousMovement = previousMovement;
@@ -30,7 +35,12 @@ public class Movement {
 		this.numberSuccess = numberSuccess;
 		this.otherSuccess = otherSuccess;
 		this.ambiguous = ambiguous;
-		this.perseverative = perseverative;
+		this.perseverativeStrategy = perseverativeStrategy;
+		this.contextMaintainFail = contextMaintainFail;
+		this.conceptualLevelAnswer = conceptualLevelAnswer;
+	}
+	
+	public Movement() {
 	}
 
 	//GETTERS AND SETTERS
@@ -114,12 +124,36 @@ public class Movement {
 		this.ambiguous = ambiguous;
 	}
 
+	public Strategy getPerseverativeStrategy() {
+		return perseverativeStrategy;
+	}
+
+	public void setPerseverativeStrategy(Strategy perseverativeStrategy) {
+		this.perseverativeStrategy = perseverativeStrategy;
+	}
+
 	public boolean isPerseverative() {
 		return perseverative;
 	}
 
 	public void setPerseverative(boolean perseverative) {
 		this.perseverative = perseverative;
+	}
+
+	public boolean isContextMaintainFail() {
+		return contextMaintainFail;
+	}
+
+	public void setContextMaintainFail(boolean contextMaintainFail) {
+		this.contextMaintainFail = contextMaintainFail;
+	}
+
+	public boolean isConceptualLevelAnswer() {
+		return conceptualLevelAnswer;
+	}
+
+	public void setConceptualLevelAnswer(boolean conceptualLevelAnswer) {
+		this.conceptualLevelAnswer = conceptualLevelAnswer;
 	}
 
 	//OTHER METHODS
@@ -147,7 +181,7 @@ public class Movement {
 		String numberResult = "N";
 		reportDescription += numberResult + "  ";
 
-		//Inserir análise de cor
+		//Inserir análise de outra
 		String otherResult = "O";
 		reportDescription += otherResult;
 		

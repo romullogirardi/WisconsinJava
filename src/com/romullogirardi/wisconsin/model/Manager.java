@@ -10,6 +10,7 @@ public class Manager {
 
 	//ATTRIBUTES
 	private String userName = new String();
+	private int userAge = 0;
 	private Calendar initialTime;
 	private Calendar finalTime;
 	private Strategy strategy = Constants.INITIAL_STRATEGY;
@@ -27,7 +28,8 @@ public class Manager {
 	private boolean gameFinished = false;
 	private int repeatedSuccessCounter = 0;
 	private int categorySequenceNumber = 1;
-	private Strategy wrongPerseverativeStrategy = null;
+	private int cardToBePlayedIndex = 0;
+	private Strategy perseverativeStrategy = null;
 	
 	//SINGLETON IMPLEMENTATION
 	private static Manager instance = null;
@@ -52,6 +54,14 @@ public class Manager {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+	}
+
+	public int getUserAge() {
+		return userAge;
+	}
+
+	public void setUserAge(int userAge) {
+		this.userAge = userAge;
 	}
 
 	public Calendar getInitialTime() {
@@ -141,13 +151,16 @@ public class Manager {
 		boolean numberSuccess = false;
 		boolean otherSuccess = false;
 		boolean ambiguous = false;
-		boolean perseverative = false;
+		boolean contextMaintainFail = false;
+		boolean conceptualLevelAnswer = false;
 		
-		//Referência para o movimento anterior
+		//Referência para os dois movimentos anteriores
 		Movement previousMovement = null;
-		if(movements.size() > 0) {
+		Movement previousPreviousMovement = null;
+		if(movements.size() > 0)
 			previousMovement = movements.get(movements.size() - 1);
-		}
+		if(movements.size() > 1)
+			previousPreviousMovement = movements.get(movements.size() - 2);
 		
 		//Controle de sucessos
 		if(cardToBePlayed.getColor().equals(referenceCard.getColor())) {
@@ -169,6 +182,9 @@ public class Manager {
 				this.repeatedSuccessCounter = 1;
 		}
 		else {
+			//Controle de falha ao manter o contexto
+			if(repeatedSuccessCounter >= 5)
+				contextMaintainFail = true;
 			this.repeatedSuccessCounter = 0;
 		}
 		if(!colorSuccess && !shapeSuccess && !numberSuccess) {
@@ -180,36 +196,51 @@ public class Manager {
 			ambiguous = true;
 		}
 
-		//Controle de perseveratividade
-		//1º caso
-		Strategy wrongStrategy = null;
+		//Controle da estratégia perseverativa
 		if(!success && !ambiguous) {
+			Strategy wrongStrategy = null;			
 			wrongStrategy = ((colorSuccess) ? Strategy.COLOR : 
 										(shapeSuccess) ? Strategy.SHAPE : 
-										(numberSuccess) ? Strategy.NUMBER : Strategy.OTHER);
-			if(wrongPerseverativeStrategy != null && wrongPerseverativeStrategy.equals(wrongStrategy)) {
-				perseverative = true;
+										(numberSuccess) ? Strategy.NUMBER : null);
+			if(perseverativeStrategy == null) {
+				perseverativeStrategy = wrongStrategy;
 			}
-			if(!wrongStrategy.equals(Strategy.OTHER)) {
-				wrongPerseverativeStrategy = wrongStrategy;
-			}
-		}
-		//2º caso
-		if(previousMovement != null && !previousMovement.getCurrentStrategy().equals(strategy)) {
-			if(wrongStrategy != null && wrongStrategy.equals(previousMovement.getCurrentStrategy())) {
-				perseverative = true;
+			else {
+				if(wrongStrategy != null && previousMovement != null && previousPreviousMovement != null) {
+					Strategy previousMovementWrongStrategy = null;			
+					previousMovementWrongStrategy = ((previousMovement.isColorSuccess()) ? Strategy.COLOR : 
+												(previousMovement.isShapeSuccess()) ? Strategy.SHAPE : 
+												(previousMovement.isNumberSuccess()) ? Strategy.NUMBER : null);
+					Strategy previousPreviousMovementWrongStrategy = null;			
+					previousPreviousMovementWrongStrategy = ((previousPreviousMovement.isColorSuccess()) ? Strategy.COLOR : 
+												(previousPreviousMovement.isShapeSuccess()) ? Strategy.SHAPE : 
+												(previousPreviousMovement.isNumberSuccess()) ? Strategy.NUMBER : null);
+					if(wrongStrategy.equals(previousMovementWrongStrategy) && wrongStrategy.equals(previousPreviousMovementWrongStrategy)) {
+						previousMovement.setPerseverativeStrategy(wrongStrategy);
+						perseverativeStrategy = wrongStrategy;
+					}
+				}
 			}
 		}
 		
-		Movement movement = new Movement(categorySequenceNumber, strategy, previousMovement, repeatedSuccessCounter, 
-				success, colorSuccess, shapeSuccess, numberSuccess, otherSuccess, ambiguous, perseverative);
+		//Controle de resposta de nível conceitual
+		if(previousMovement != null && previousPreviousMovement != null) {
+			if(success && previousMovement.isSuccess() && previousPreviousMovement.isSuccess()) {
+				conceptualLevelAnswer = true;
+				previousMovement.setConceptualLevelAnswer(true);
+				previousPreviousMovement.setConceptualLevelAnswer(true);
+			}
+		}
+		
+		Movement movement = new Movement(categorySequenceNumber, strategy, previousMovement, 
+				repeatedSuccessCounter, success, colorSuccess, shapeSuccess, numberSuccess, otherSuccess, 
+				ambiguous, perseverativeStrategy, contextMaintainFail, conceptualLevelAnswer);
 		movements.add(movement);
 		changeLastCardInPosition(position);
-		nextCardToBePlayed();
-		System.out.println(this.repeatedSuccessCounter);
 		if(this.repeatedSuccessCounter >= Constants.SUCCESS_COUNTER_CHANGE_POINT) {
 			changeStrategy();
 		}
+		nextCardToBePlayed();
 	}
 	
 	private Card getReferenceCard(int position) {
@@ -268,13 +299,92 @@ public class Manager {
 	}
 	
 	private void nextCardToBePlayed() {
-		int index = cardsToBePlayed.indexOf(cardToBePlayed);
-		if(index == (cardsToBePlayed.size() - 1)) {
+		
+		//If cards to be played are finished
+		if(cardToBePlayedIndex == (cardsToBePlayed.size() - 1)) {
 			cardToBePlayed = null;
 			gameFinished = true;
 		}
 		else {
-			cardToBePlayed = cardsToBePlayed.get(++index);
+			cardToBePlayed = cardsToBePlayed.get(++cardToBePlayedIndex);
+			//If 6 categories are completed
+			if(categorySequenceNumber >= 7) {
+				gameFinished = true;
+			}
+		}
+	}
+	
+	public void setMovementsPerseverativity() {
+
+		for(int index = 0; index < movements.size(); index++) {
+
+			Movement movement = movements.get(index);
+			
+			//1º caso
+			Strategy wrongStrategy = null;
+			if(!movement.isSuccess() && !movement.isAmbiguous()) {
+				wrongStrategy = ((movement.isColorSuccess()) ? Strategy.COLOR : 
+									(movement.isShapeSuccess()) ? Strategy.SHAPE : 
+									(movement.isNumberSuccess()) ? Strategy.NUMBER : null);
+				if(movement.getPerseverativeStrategy() != null && 
+						movement.getPerseverativeStrategy().equals(wrongStrategy)) {
+					movement.setPerseverative(true);
+				}
+			}
+			//2º caso
+			if(index > 0) {
+				Movement previousMovement = movements.get(index - 1);
+				if(previousMovement != null && !previousMovement.getCurrentStrategy().equals(strategy)) {
+					if(wrongStrategy != null && wrongStrategy.equals(previousMovement.getCurrentStrategy())) {
+						movement.setPerseverative(true);
+					}
+				}
+			}
+			//3º caso
+			if(movement.isAmbiguous() && movement.getPerseverativeStrategy() != null) {
+				
+				boolean firstConditionSatisfied = false;
+				
+				//1º condição
+				switch (movement.getPerseverativeStrategy()) {
+					case COLOR:
+						if(movement.isColorSuccess())
+							firstConditionSatisfied = true;
+						break;
+					case SHAPE:
+						if(movement.isShapeSuccess())
+							firstConditionSatisfied = true;
+						break;
+					case NUMBER:
+						if(movement.isNumberSuccess())
+							firstConditionSatisfied = true;
+						break;
+					default:
+						break;
+				}
+				//2ª condição
+				if(firstConditionSatisfied) {
+					Movement previousClosestNoAmbiguousMovement = null;
+					Movement nextClosestNoAmbiguousMovement = null;
+					int indexTemp = index;
+					while(indexTemp > 0 && previousClosestNoAmbiguousMovement == null) {
+						indexTemp--;
+						if(!movements.get(indexTemp).isAmbiguous())
+							previousClosestNoAmbiguousMovement = movements.get(indexTemp);
+					}
+					indexTemp = index;
+					while(indexTemp < (movements.size() - 1) && nextClosestNoAmbiguousMovement == null) {
+						indexTemp++;
+						if(!movements.get(indexTemp).isAmbiguous())
+							nextClosestNoAmbiguousMovement = movements.get(indexTemp);
+					}
+					if(previousClosestNoAmbiguousMovement != null && nextClosestNoAmbiguousMovement != null &&
+							previousClosestNoAmbiguousMovement.isPerseverative() && nextClosestNoAmbiguousMovement.isPerseverative() &&
+							previousClosestNoAmbiguousMovement.getPerseverativeStrategy() != null && previousClosestNoAmbiguousMovement.getPerseverativeStrategy().equals(movement.getPerseverativeStrategy()) &&
+							nextClosestNoAmbiguousMovement.getPerseverativeStrategy() != null && nextClosestNoAmbiguousMovement.getPerseverativeStrategy().equals(movement.getPerseverativeStrategy()))
+								movement.setPerseverative(true);
+				}
+			}
 		}
 	}
 	
@@ -341,13 +451,24 @@ public class Manager {
 
 	public int getNumberOfConceptualLevelAnswers() {
 
-		int numberOfPerseverativeErrors = 0;
-//		for(Movement movement : movements) {
-//			if(movement.isPerseverative() && !movement.isSuccess()) {
-//				numberOfPerseverativeErrors++;
-//			}
-//		}
-		return numberOfPerseverativeErrors;
+		int numberOfConceptualLevelAnswer = 0;
+		for(Movement movement : movements) {
+			if(movement.isConceptualLevelAnswer()) {
+				numberOfConceptualLevelAnswer++;
+			}
+		}
+		return numberOfConceptualLevelAnswer;
+	}
+
+	public int getNumberOfContextMaintainFailures() {
+
+		int numberOfContextMaintainFailures = 0;
+		for(Movement movement : movements) {
+			if(movement.isContextMaintainFail()) {
+				numberOfContextMaintainFailures++;
+			}
+		}
+		return numberOfContextMaintainFailures;
 	}
 
 	public int getNumberOfTriesToCompleteFirstCategory() {
